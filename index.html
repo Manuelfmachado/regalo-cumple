@@ -145,10 +145,14 @@ body{
 .gscore{display:flex;align-items:baseline;justify-content:center;gap:7px;margin:16px 0 0;font-family:var(--serif);color:#ffd9a8}
 .gscore b{font-size:2.1rem;font-weight:400;display:inline-block;transform-origin:center}
 .gscore b.bump{animation:bump .35s var(--ease)}
+.gscore b.miss{animation:miss .45s var(--ease);color:#ff9fb2}
+@keyframes miss{0%{transform:scale(1)}30%{transform:scale(.78) translateX(-4px)}65%{transform:scale(1.06) translateX(4px)}100%{transform:scale(1)}}
 @keyframes bump{0%{transform:scale(1)}40%{transform:scale(1.4)}100%{transform:scale(1)}}
 .gscore span{font-size:1rem;color:rgba(255,214,170,.5)}
 .garena{position:relative;flex:1 1 auto;width:100%;max-width:560px;overflow:hidden;margin-top:6px;min-height:0}
 .gheart{position:absolute;bottom:-70px;width:54px;height:54px;margin-left:-27px;padding:0;border:0;background:none;cursor:pointer;color:#ffb3c8;font-size:34px;line-height:54px;text-align:center;filter:drop-shadow(0 0 12px rgba(255,120,170,.8));animation-name:rise;animation-timing-function:linear;animation-fill-mode:forwards;-webkit-tap-highlight-color:transparent}
+.gheart .gs{display:block;animation:sway 1.5s ease-in-out infinite alternate}
+@keyframes sway{from{transform:translateX(-15px) rotate(-7deg)}to{transform:translateX(15px) rotate(7deg)}}
 .gheart:active{color:#ffdbe6}
 @keyframes rise{from{bottom:-70px}to{bottom:104%}}
 .gskip{position:relative;z-index:4;margin:8px auto 0;background:none;border:0;color:rgba(255,240,250,.32);font-family:var(--sans);font-size:.56rem;letter-spacing:.28em;text-transform:uppercase;cursor:pointer;padding:8px 14px;transition:color .3s}
@@ -264,7 +268,7 @@ body{
     <div class="ghead">
       <p class="eyebrow" style="margin-bottom:18px">un juego rápido</p>
       <h2 class="gtitle">Atrapa los <em>corazones</em></h2>
-      <p class="gsub" id="gsub">se escapan 8 corazones… atrápalos todos</p>
+      <p class="gsub" id="gsub">atrapa 8 … si uno se escapa, pierdes uno</p>
       <div class="gscore"><b id="gcount">0</b><span id="gof">/ 8</span></div>
     </div>
     <div class="garena" id="garena"></div>
@@ -603,31 +607,39 @@ body{
     gcount.textContent = '0';
     arena.innerHTML = '';
     gdome.classList.remove('on');
-    gsub.textContent = 'se escapan ' + GMETA + ' corazones… atrápalos todos';
+    gsub.textContent = 'atrapa ' + GMETA + ' … si uno se escapa, pierdes uno';
     document.getElementById('gof').textContent = '/ ' + GMETA;
     document.getElementById('journey').classList.remove('on');
     document.getElementById('finale').classList.remove('on');
     gameEl.classList.add('on');
     setTimeout(function(){ if (gActive) spawnHeart(); }, 700);
-    gTimer = setInterval(function(){ if (gActive) spawnHeart(); }, 780);
+    gTimer = setInterval(function(){ if (gActive) spawnHeart(); }, 400);
     bell(523.25, 0.05);
   }
 
   function spawnHeart(){
-    if (!gActive || arena.children.length > 5) return;
+    if (!gActive || arena.children.length > 6) return;
     var el = document.createElement('button');
     el.type = 'button';
     el.className = 'gheart';
-    el.textContent = '♥';
+    el.innerHTML = '<span class="gs">♥</span>';
     el.setAttribute('aria-label', 'Atrapa el corazón');
     el.style.left = (14 + Math.random() * 72) + '%';
-    el.style.animationDuration = (4.6 + Math.random() * 2.1) + 's';
+    el.style.animationDuration = (2.1 + Math.random() * 1.1) + 's';
     el.addEventListener('pointerdown', function(ev){
       if (ev.cancelable) ev.preventDefault();
       catchHeart(el);
     });
-    el.addEventListener('animationend', function(){
+    el.addEventListener('animationend', function(evt){
+      if (evt.target !== el) return;
       if (el.parentNode) el.parentNode.removeChild(el);
+      if (!gActive || gCaught <= 0) return;
+      gCaught--;
+      gcount.textContent = String(gCaught);
+      gcount.classList.remove('miss');
+      void gcount.offsetWidth;
+      gcount.classList.add('miss');
+      bell(196, 0.03);
     });
     arena.appendChild(el);
   }
