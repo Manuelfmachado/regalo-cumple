@@ -77,9 +77,9 @@ body{
 #journey{justify-content:space-between;gap:10px}
 .jtop{width:100%;max-width:560px;display:flex;justify-content:center;padding-top:4px;flex:0 0 auto}
 .dots{display:flex;gap:7px;align-items:center;justify-content:center;flex-wrap:wrap;max-width:320px}
-.dot{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.17);transition:all .55s var(--ease)}
-.dot.done{background:rgba(255,214,170,.45)}
-.dot.on{background:var(--gold);box-shadow:0 0 12px 2px rgba(255,200,140,.75);transform:scale(1.5)}
+.dot{font-size:11px;line-height:1;color:rgba(255,255,255,.15);transition:all .55s var(--ease);transform:translateZ(0)}
+.dot.done{color:rgba(255,190,215,.55)}
+.dot.on{color:#ffb3c8;text-shadow:0 0 12px rgba(255,120,170,.95);transform:scale(1.6)}
 #stage{flex:1 1 auto;width:100%;max-width:600px;display:flex;align-items:center;justify-content:center;min-height:0;overflow-y:auto;overflow-x:hidden;padding:14px 0;scrollbar-width:none}
 #stage::-webkit-scrollbar{display:none}
 .jbottom{height:42px;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
@@ -96,11 +96,11 @@ body{
 }
 .cardtop{display:flex;align-items:center;justify-content:space-between;gap:12px}
 .num{font-size:.6rem;letter-spacing:.3em;color:rgba(255,214,170,.55)}
-.spark{width:13px;height:13px;opacity:.6;flex:0 0 auto}
+.spark{font-size:11px;line-height:1;color:rgba(255,180,205,.75);flex:0 0 auto;filter:drop-shadow(0 0 5px rgba(255,140,180,.5))}
 .msg{font-family:var(--serif);font-size:clamp(1.4rem,5.4vw,1.95rem);line-height:1.44;font-weight:400;margin:20px 0 0;color:#fdf4fb;text-wrap:balance}
 .orn{margin-top:24px;display:flex;align-items:center;justify-content:center;gap:12px}
 .orn::before,.orn::after{content:"";height:1px;width:32px;background:linear-gradient(90deg,transparent,rgba(255,214,170,.45),transparent)}
-.orn span{font-size:9px;color:rgba(255,214,170,.7)}
+.orn span{font-size:11px;color:rgba(255,180,205,.85);filter:drop-shadow(0 0 6px rgba(255,140,180,.55))}
 
 @keyframes cardIn{from{opacity:0;transform:translateY(24px) scale(.985)}to{opacity:1;transform:none}}
 @keyframes cardOut{to{opacity:0;transform:translateY(-18px) scale(.99)}}
@@ -146,7 +146,7 @@ body{
 .divider{width:120px;height:1px;margin:32px 0 30px;background:linear-gradient(90deg,transparent,rgba(255,214,170,.55),transparent)}
 .letter{
   width:100%;text-align:left;padding:clamp(24px,6vw,38px);border-radius:22px;
-  background:linear-gradient(165deg,rgba(255,255,255,.07),rgba(255,255,255,.02));
+  background:linear-gradient(165deg,rgba(40,22,62,.88),rgba(22,11,38,.82));
   border:1px solid rgba(255,214,170,.14);
   box-shadow:0 30px 80px -40px rgba(0,0,0,.9), inset 0 1px 0 rgba(255,255,255,.07);
   opacity:0;transform:translateY(18px);transition:opacity 1.1s var(--ease), transform 1.1s var(--ease);
@@ -155,6 +155,10 @@ body{
 .letter p{font-family:var(--serif);font-size:clamp(1.12rem,4vw,1.32rem);line-height:1.62;color:rgba(253,244,251,.93);margin:0 0 18px;white-space:pre-line}
 .letter p:last-child{margin-bottom:0}
 .sign{font-style:italic;color:#ffd9a8;text-align:right;font-size:1.16rem;margin-top:26px}
+.video{width:100%;margin-top:28px;display:none}
+.video.show{display:block}
+.vwrap{position:relative;padding-top:56.25%;border-radius:18px;overflow:hidden;border:1px solid rgba(255,214,170,.18);box-shadow:0 24px 60px -30px rgba(0,0,0,.9);background:rgba(0,0,0,.35)}
+.vwrap iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
 .ghost{
   margin-top:32px;background:transparent;border:1px solid rgba(255,214,170,.32);color:rgba(255,240,250,.82);
   padding:12px 24px;border-radius:999px;font-family:var(--sans);font-size:.62rem;letter-spacing:.32em;text-transform:uppercase;
@@ -239,8 +243,11 @@ body{
         <p id="letterText"></p>
         <p class="sign" id="signText"></p>
       </div>
+      <div class="video" id="videoBox">
+        <div class="vwrap"><iframe id="videoFrame" title="Un video para ti" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe></div>
+      </div>
       <button class="ghost" id="again" type="button">volver a leer</button>
-      <p class="footer-note">hecho a mano, con amor</p>
+      <p class="footer-note">hecho con amor por Maño</p>
     </div>
   </section>
 
@@ -255,33 +262,27 @@ body{
      ============================================================ */
 
   var CONFIG = {
-    // Su nombre (opcional). Si lo dejas vacío, no aparece en el final.
-    nombre: "",
+    // Su nombre (aparece en la pantalla final)
+    nombre: "Marianita",
 
-    // Los mensajes. Cuantos más pongas, más largo el recorrido.
+    // Los 5 mensajes de las tarjetas
     mensajes: [
-      "Hoy no hay prisa. El día es tuyo y yo solo quería estar un ratito aquí contigo.",
-      "Esto no es una tarjeta. Es la excusa que encontré para decirte lo que a veces me da pena decir en voz alta.",
-      "Gracias por ser la que siempre contesta, incluso cuando llamo solo a quejarme del día.",
-      "Admiro cómo haces que querer bien parezca fácil. No lo es, y tú lo haces sin ruido.",
-      "Si algún día dudas de ti, acuérdate de que yo te vi hacer cosas enormes cuando tú creías que no estabas haciendo nada.",
-      "Que este año te sobren risas, planes raros, abrazos que duren y gente que te quiera bien.",
-      "Y que nunca, nunca te falte pastel."
+      "Mi Amor, eres mi dulce niña, mi ingeniera peshosha.",
+      "Hoy todo el internet puede ver esta linda dedicatoria. Si compartes el link, todos sabrán que un pedacito de internet es exclusivo para ti.",
+      "Sabes que en ti veo cualidades ingeniosas y te admiro por eso. Dios te obsequió eso.",
+      "Mi corazón es tuyo también y tú estás en mis oraciones. Deseo que la intimidad de Cristo reine en tu vida.",
+      "Con mi tierno y dulce amor te felicito en tu día. Feliz cumpleaños, Marianita."
     ],
 
-    // La tarjeta secreta (se abre manteniendo presionado el corazon).
-    sostener: {
-      texto: "Hay algo que casi nunca te digo y hoy no me lo quiero guardar...",
-      secreto: "Que donde sea que estés, siempre vas a tener un lugar donde te esperan con la mesa puesta y el corazón abierto."
-    },
+    // La carta del final
+    carta: "Mi Marianita:\n\nHoy quería darte algo que no se compra ni se envuelve: un pedacito de internet hecho solo para ti, donde cada palabra te la digo sin apuro.\n\nGracias por ser mi dulce niña, mi ingeniera peshosha, mi compañía bonita. Que Dios siga bendiciendo tu vida y que este año te devuelva todo lo bueno que das.\n\nFeliz cumpleaños, mi amor.",
 
-    // La carta del final. Usa saltos de línea normales.
-    carta: "Hay regalos que se envuelven y otros que se tejen con tiempo. Este es de los segundos: unas cuantas frases que fui guardando para decirte hoy, cuando el día es tuyo.\n\nGracias por ser casa, por ser risa fácil y por quedarte incluso cuando no sabías cómo ayudarme.\n\nOjalá este año te devuelva, en cosas pequeñas y en cosas enormes, todo lo bueno que das sin darte cuenta.\n\nTe quiero hoy. Y todos los días que vengan.",
+    firma: "Con todo mi cariño, Maño",
 
-    firma: "Con todo mi amor",
+    // Video opcional al final: pega aquí el link de YouTube o de Google Drive.
+    video: "",
 
     // Foto opcional: guarda la imagen al lado de este archivo y pon aquí su nombre.
-    // Ejemplo: foto: "foto.jpg"
     foto: "",
     fotoCaption: "",
 
@@ -311,14 +312,9 @@ body{
   function buildScenes(){
     var out = [];
     var msgs = CONFIG.mensajes || [];
-    var holdAt = Math.max(2, Math.floor(msgs.length / 2) + 1);
-    var hold = { kind:'hold', texto: CONFIG.sostener.texto, secreto: CONFIG.sostener.secreto };
-    var placed = false;
     for (var i = 0; i < msgs.length; i++){
-      if (i === holdAt){ out.push(hold); placed = true; }
       out.push({ kind:'msg', texto: msgs[i] });
     }
-    if (!placed) out.push(hold);
     if (CONFIG.foto) out.push({ kind:'photo', src: CONFIG.foto, caption: CONFIG.fotoCaption });
     return out;
   }
@@ -330,6 +326,7 @@ body{
     for (var i = 0; i < total; i++){
       var d = document.createElement('span');
       d.className = 'dot';
+      d.textContent = '\u2665';
       dotsEl.appendChild(d);
     }
   }
@@ -353,7 +350,7 @@ body{
     num.textContent = pad(i + 1) + ' / ' + pad(SCENES.length);
     var spark = document.createElement('span');
     spark.className = 'spark';
-    spark.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="#ffd9a8" stroke-width="1.4" style="width:100%;height:100%"><path d="M12 2v20M2 12h20M5 5l14 14M19 5L5 19" opacity=".65"/></svg>';
+    spark.textContent = '\u2665';
     top.appendChild(num);
     top.appendChild(spark);
     card.appendChild(top);
@@ -422,7 +419,7 @@ body{
     var orn = document.createElement('div');
     orn.className = 'orn';
     var st = document.createElement('span');
-    st.textContent = '✦';
+    st.textContent = '♥';
     orn.appendChild(st);
     card.appendChild(orn);
 
@@ -558,10 +555,25 @@ body{
     letterEl.textContent = CONFIG.carta;
     signEl.textContent = CONFIG.firma;
 
+    if (CONFIG.video){
+      var box = document.getElementById('videoBox');
+      var fr = document.getElementById('videoFrame');
+      if (box && fr){ fr.src = embedUrl(CONFIG.video); box.classList.add('show'); }
+    }
+
     setTimeout(function(){ finale.classList.add('lit'); }, 420);
     setTimeout(function(){ rain(46); }, 260);
     setTimeout(function(){ rain(26); }, 1100);
     finaleChord();
+  }
+
+  function embedUrl(u){
+    if (!u) return '';
+    var yt = u.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/|live\/))([A-Za-z0-9_-]{6,})/);
+    if (yt) return 'https://www.youtube.com/embed/' + yt[1];
+    var dr = u.match(/drive\.google\.com\/file\/d\/([^\/]+)/);
+    if (dr) return 'https://drive.google.com/file/d/' + dr[1] + '/preview';
+    return u;
   }
 
   function restart(){
@@ -589,6 +601,7 @@ body{
     down = null;
     if (moved > 20 || !quick) return;
     unlockAudio();
+    burst(e.clientX, e.clientY, 9);
     startJourney(0);
   });
 
@@ -603,6 +616,7 @@ body{
     if (moved > 16 || !quick) return;
     if (d.target && d.target.closest && d.target.closest('button')) return;
     if (state.inFinale) return;
+    burst(e.clientX, e.clientY, 6);
     advance();
   });
 
@@ -724,6 +738,26 @@ body{
   var COLORS = ['rgba(255,220,180,', 'rgba(255,180,205,', 'rgba(214,185,255,', 'rgba(255,246,235,'];
 
   function ambient(){
+    if (Math.random() < 0.52){
+      parts.push({
+        t: 'heart',
+        x: Math.random() * W,
+        y: H + 16,
+        vx: (Math.random() - 0.5) * 0.18,
+        vy: -(0.10 + Math.random() * 0.28),
+        g: 0,
+        r: 3.2 + Math.random() * 4.6,
+        a: 0.20 + Math.random() * 0.38,
+        c: 'rgba(255,170,200,',
+        rot: (Math.random() - 0.5) * 0.5,
+        vr: (Math.random() - 0.5) * 0.012,
+        life: 0,
+        max: 1100 + Math.random() * 1100,
+        wob: Math.random() * 6.28,
+        ws: 0.0006 + Math.random() * 0.0014
+      });
+      return;
+    }
     var c = COLORS[Math.floor(Math.random() * COLORS.length)];
     parts.push({
       t: 'dot',
@@ -756,6 +790,7 @@ body{
           vy: Math.sin(ang) * sp - 0.5,
           r: 3 + Math.random() * 4,
           a: 0.7,
+          g: 0.0009,
           c: 'rgba(255,170,200,',
           rot: Math.random() * 6.28,
           vr: (Math.random() - 0.5) * 0.05,
@@ -784,21 +819,22 @@ body{
         setTimeout(function(){
           if (parts.length > 260) return;
           parts.push({
-            t: 'petal',
+            t: 'heart',
             x: Math.random() * W,
-            y: -20 - Math.random() * 120,
-            vx: (Math.random() - 0.5) * 0.5,
-            vy: 0.35 + Math.random() * 0.7,
-            r: 3 + Math.random() * 6,
-            a: 0.45 + Math.random() * 0.4,
-            c: COLORS[Math.floor(Math.random() * COLORS.length)],
+            y: -20 - Math.random() * 140,
+            vx: (Math.random() - 0.5) * 0.4,
+            vy: 0.28 + Math.random() * 0.55,
+            g: 0.00025,
+            r: 4 + Math.random() * 5,
+            a: 0.28 + Math.random() * 0.34,
+            c: 'rgba(255,170,200,',
             rot: Math.random() * 6.28,
-            vr: (Math.random() - 0.5) * 0.06,
-            life: 0, max: 6200,
+            vr: (Math.random() - 0.5) * 0.05,
+            life: 0, max: 9000,
             wob: Math.random() * 6.28,
             ws: 0.001 + Math.random() * 0.0016
           });
-        }, k * 26 + Math.random() * 220);
+        }, k * 24 + Math.random() * 200);
       })(i);
     }
   }
@@ -843,7 +879,7 @@ body{
       var k = p.life / p.max;
 
       if (p.t === 'heart' || p.t === 'petal'){
-        p.vy += (p.t === 'petal' ? 0.0006 : 0.0009) * dt;
+        p.vy += (p.g || 0) * dt;
         p.x += p.vx * dt + Math.sin((p.life + p.wob * 900) * p.ws) * (p.t === 'petal' ? 0.35 : 0.12);
         p.y += p.vy * dt;
         p.rot += p.vr * dt / 16;
