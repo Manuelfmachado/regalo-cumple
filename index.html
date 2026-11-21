@@ -160,6 +160,8 @@ body{
 .vwrap{position:relative;width:100%;aspect-ratio:16/9;border-radius:18px;overflow:hidden;border:1px solid rgba(255,214,170,.18);box-shadow:0 24px 60px -30px rgba(0,0,0,.9);background:rgba(0,0,0,.35)}
 .vwrap.vertical{max-width:320px;margin:0 auto;aspect-ratio:9/16}
 .vwrap iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.vlink{margin:12px 0 0;text-align:center;font-size:.6rem;letter-spacing:.22em;text-transform:uppercase}
+.vlink a{color:rgba(255,214,170,.72);text-decoration:none;border-bottom:1px solid rgba(255,214,170,.25);padding-bottom:2px}
 .ghost{
   margin-top:32px;background:transparent;border:1px solid rgba(255,214,170,.32);color:rgba(255,240,250,.82);
   padding:12px 24px;border-radius:999px;font-family:var(--sans);font-size:.62rem;letter-spacing:.32em;text-transform:uppercase;
@@ -246,6 +248,7 @@ body{
       </div>
       <div class="video" id="videoBox">
         <div class="vwrap"><iframe id="videoFrame" title="Un video para ti" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe></div>
+        <p class="vlink"><a id="videoLink" href="#" target="_blank" rel="noopener">si no carga, ábrelo en YouTube ↗</a></p>
       </div>
       <button class="ghost" id="again" type="button">volver a leer</button>
       <p class="footer-note">hecho con amor por Maño</p>
@@ -559,11 +562,23 @@ body{
     if (CONFIG.video){
       var box = document.getElementById('videoBox');
       var fr = document.getElementById('videoFrame');
-      if (box && fr){
+      var wrapEl = box ? box.querySelector('.vwrap') : null;
+      var reveal = function(){
+        if (!box || !fr) return;
         fr.src = embedUrl(CONFIG.video);
-        var wrapEl = box.querySelector('.vwrap');
+        var lk = document.getElementById('videoLink');
+        if (lk) lk.href = CONFIG.video;
         if (wrapEl && /shorts\//.test(CONFIG.video)) wrapEl.classList.add('vertical');
         box.classList.add('show');
+      };
+      var vid = (CONFIG.video.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/|live\/))([A-Za-z0-9_-]{6,})/) || [])[1];
+      if (vid){
+        var probe = new Image();
+        probe.onload = reveal;
+        probe.onerror = function(){ if (box) box.style.display = 'none'; };
+        probe.src = 'https://i.ytimg.com/vi/' + vid + '/hqdefault.jpg';
+      } else {
+        reveal();
       }
     }
 
