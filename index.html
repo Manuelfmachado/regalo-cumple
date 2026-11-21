@@ -160,6 +160,7 @@ body{
 .vwrap{position:relative;width:100%;aspect-ratio:16/9;border-radius:18px;overflow:hidden;border:1px solid rgba(255,214,170,.18);box-shadow:0 24px 60px -30px rgba(0,0,0,.9);background:rgba(0,0,0,.35)}
 .vwrap.vertical{max-width:320px;margin:0 auto;aspect-ratio:9/16}
 .vwrap iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.vwrap video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#05030a;outline:none}
 .vlink{margin:12px 0 0;text-align:center;font-size:.6rem;letter-spacing:.22em;text-transform:uppercase}
 .vlink a{color:rgba(255,214,170,.72);text-decoration:none;border-bottom:1px solid rgba(255,214,170,.25);padding-bottom:2px}
 .ghost{
@@ -247,8 +248,11 @@ body{
         <p class="sign" id="signText"></p>
       </div>
       <div class="video" id="videoBox">
-        <div class="vwrap"><iframe id="videoFrame" title="Un video para ti" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe></div>
-        <p class="vlink"><a id="videoLink" href="#" target="_blank" rel="noopener">si no carga, ábrelo en YouTube ↗</a></p>
+        <div class="vwrap" id="videoWrap">
+          <video id="localVideo" controls playsinline preload="metadata" poster="poster.jpg"></video>
+          <iframe id="videoFrame" title="Un video para ti" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy" style="display:none"></iframe>
+        </div>
+        <p class="vlink" id="videoLinkBox"><a id="videoLink" href="#" target="_blank" rel="noopener">si no carga, ábrelo en YouTube ↗</a></p>
       </div>
       <button class="ghost" id="again" type="button">volver a leer</button>
       <p class="footer-note">hecho con amor por Maño</p>
@@ -283,8 +287,12 @@ body{
 
     firma: "Con todo mi cariño, Maño",
 
-    // Video opcional al final: pega aquí el link de YouTube o de Google Drive.
-    video: "https://youtube.com/shorts/Mv6oZ-6gPCo",
+    // Video al final: se reproduce dentro de la página (sin YouTube)
+    videoFile: "video.mp4",
+    videoPoster: "poster.jpg",
+
+    // Alternativa: un link de YouTube, si algún día lo prefieres
+    video: "",
 
     // Foto opcional: guarda la imagen al lado de este archivo y pon aquí su nombre.
     foto: "",
@@ -559,29 +567,40 @@ body{
     letterEl.textContent = CONFIG.carta;
     signEl.textContent = CONFIG.firma;
 
-    if (CONFIG.video){
-      var box = document.getElementById('videoBox');
+    var vbox = document.getElementById('videoBox');
+    if (vbox){
+      var wrapEl = vbox.querySelector('.vwrap');
       var fr = document.getElementById('videoFrame');
-      var wrapEl = box ? box.querySelector('.vwrap') : null;
-      var reveal = function(){
-        if (!box || !fr) return;
-        fr.src = embedUrl(CONFIG.video);
-        var lk = document.getElementById('videoLink');
-        if (lk) lk.href = CONFIG.video;
-        if (wrapEl && /shorts\//.test(CONFIG.video)) wrapEl.classList.add('vertical');
-        box.classList.add('show');
-      };
-      var vid = (CONFIG.video.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/|live\/))([A-Za-z0-9_-]{6,})/) || [])[1];
-      if (vid){
-        var check = 'https://www.youtube.com/oembed?url=' + encodeURIComponent('https://www.youtube.com/watch?v=' + vid) + '&format=json';
-        fetch(check, { mode: 'cors' })
-          .then(function(r){
-            if (r.ok){ reveal(); }
-            else if (box){ box.style.display = 'none'; }
-          })
-          .catch(function(){ reveal(); });
-      } else {
-        reveal();
+      var lv = document.getElementById('localVideo');
+      var linkBox = document.getElementById('videoLinkBox');
+
+      if (CONFIG.videoFile && lv){
+        lv.src = CONFIG.videoFile;
+        if (CONFIG.videoPoster) lv.poster = CONFIG.videoPoster;
+        lv.addEventListener('loadedmetadata', function(){
+          if (lv.videoHeight > lv.videoWidth && wrapEl) wrapEl.classList.add('vertical');
+        });
+        if (linkBox) linkBox.style.display = 'none';
+        vbox.classList.add('show');
+      } else if (CONFIG.video && fr){
+        var reveal = function(){
+          fr.style.display = '';
+          fr.src = embedUrl(CONFIG.video);
+          var lk = document.getElementById('videoLink');
+          if (lk) lk.href = CONFIG.video;
+          if (wrapEl && /shorts\//.test(CONFIG.video)) wrapEl.classList.add('vertical');
+          vbox.classList.add('show');
+        };
+        var vid = (CONFIG.video.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/|live\/))([A-Za-z0-9_-]{6,})/) || [])[1];
+        if (vid){
+          fetch('https://www.youtube.com/oembed?url=' + encodeURIComponent('https://www.youtube.com/watch?v=' + vid) + '&format=json', { mode: 'cors' })
+            .then(function(r){ if (r.ok){ reveal(); } else { vbox.style.display = 'none'; } })
+            .catch(function(){ reveal(); });
+        } else {
+          reveal();
+        }
+      } else if (vbox){
+        vbox.style.display = 'none';
       }
     }
 
