@@ -157,7 +157,8 @@ body{
 .sign{font-style:italic;color:#ffd9a8;text-align:right;font-size:1.16rem;margin-top:26px}
 .video{width:100%;margin-top:28px;display:none}
 .video.show{display:block}
-.vwrap{position:relative;padding-top:56.25%;border-radius:18px;overflow:hidden;border:1px solid rgba(255,214,170,.18);box-shadow:0 24px 60px -30px rgba(0,0,0,.9);background:rgba(0,0,0,.35)}
+.vwrap{position:relative;width:100%;aspect-ratio:16/9;border-radius:18px;overflow:hidden;border:1px solid rgba(255,214,170,.18);box-shadow:0 24px 60px -30px rgba(0,0,0,.9);background:rgba(0,0,0,.35)}
+.vwrap.vertical{max-width:320px;margin:0 auto;aspect-ratio:9/16}
 .vwrap iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
 .ghost{
   margin-top:32px;background:transparent;border:1px solid rgba(255,214,170,.32);color:rgba(255,240,250,.82);
@@ -280,7 +281,7 @@ body{
     firma: "Con todo mi cariño, Maño",
 
     // Video opcional al final: pega aquí el link de YouTube o de Google Drive.
-    video: "",
+    video: "https://youtube.com/shorts/Mv6oZ-6gPCo",
 
     // Foto opcional: guarda la imagen al lado de este archivo y pon aquí su nombre.
     foto: "",
@@ -558,7 +559,12 @@ body{
     if (CONFIG.video){
       var box = document.getElementById('videoBox');
       var fr = document.getElementById('videoFrame');
-      if (box && fr){ fr.src = embedUrl(CONFIG.video); box.classList.add('show'); }
+      if (box && fr){
+        fr.src = embedUrl(CONFIG.video);
+        var wrapEl = box.querySelector('.vwrap');
+        if (wrapEl && /shorts\//.test(CONFIG.video)) wrapEl.classList.add('vertical');
+        box.classList.add('show');
+      }
     }
 
     setTimeout(function(){ finale.classList.add('lit'); }, 420);
